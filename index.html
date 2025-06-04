@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Elite Mic Up</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+        /* STATUS INDICATOR STYLES */
+    .status-indicator {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      z-index: 9999;
+    }
+
+    .status-circle {
+      width: 14px;
+      height: 14px;
+      background-color: orange;
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(0, 119, 255, 0.6);
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+    }
+
+    .status-indicator:hover .status-circle {
+      box-shadow: 0 0 14px rgba(0, 119, 255, 0.6);
+      transform: scale(1.1);
+    }
+
+    .status-text {
+      color: white;
+      font-size: 14px;
+      opacity: 0;
+      transform: translateX(-10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      white-space: nowrap;
+    }
+
+    .status-indicator:hover .status-text {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    :root {
+      --bg-color: #0f0f0f;
+      --text-color: #fff;
+      --accent-color: #4da6ff;
+      --box-color: #1a1a1a;
+      --scroll-bg: #111;
+      --scroll-thumb: #4da6ff;
+    }
+
+    body.light-mode {
+      --bg-color: #f0f0f0;
+      --text-color: #000;
+      --accent-color: #007bff;
+      --box-color: #fff;
+      --scroll-bg: #ccc;
+      --scroll-thumb: #007bff;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      font-family: Arial, sans-serif;
+      scroll-behavior: smooth;
+      transition: background-color 0.4s, color 0.4s;
+    }
+
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: var(--scroll-bg);
+    }
+    ::-webkit-scrollbar-thumb {
+      background-color: var(--scroll-thumb);
+      border-radius: 10px;
+    }
+
+    .popup-animate {
+      opacity: 0;
+      transform: translateY(30px);
+      animation: popup 0.8s ease forwards;
+    }
+
+    @keyframes popup {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .navbar {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      display: flex;
+      gap: 15px;
+      z-index: 999;
+    }
+
+    .navbar a {
+      color: var(--text-color);
+      text-decoration: none;
+      padding: 10px 15px;
+      border-radius: 20px;
+      transition: 0.3s ease;
+      background-color: transparent;
+      border: 1px solid var(--accent-color);
+    }
+
+    .navbar a.active,
+    .navbar a:hover {
+      box-shadow: 0 0 10px var(--accent-color);
+    }
+
+    .theme-toggle {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      z-index: 999;
+      background-color: var(--box-color);
+      border: none;
+      border-radius: 20px;
+      padding: 5px 15px;
+      color: var(--text-color);
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s ease, color 0.3s ease;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    .theme-toggle.light-active {
+      background-color: #fff;
+      color: #000;
+      box-shadow: 0 0 10px #007bff;
+    }
+
+    .hero-section {
+      text-align: center;
+      padding: 120px 20px 40px;
+    }
+
+    .logo img {
+      width: 110px;
+      border-radius: 50%;
+      transition: 0.3s ease;
+      box-shadow: 0 0 20px var(--accent-color);
+    }
+
+    h1 {
+      font-size: 2.5em;
+      color: var(--accent-color);
+      margin-top: 10px;
+    }
+
+    .discord-button {
+      background-color: #5865F2;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 1.2em;
+      border-radius: 30px;
+      cursor: pointer;
+      margin: 20px 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: 0.3s;
+    }
+
+    .discord-button:hover {
+      box-shadow: 0 0 15px #5865F2, 0 0 30px #5865F2;
+    }
+
+    .features {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      flex-wrap: wrap;
+      margin: 40px 0;
+    }
+
+    .feature {
+      background-color: var(--box-color);
+      border-radius: 20px;
+      padding: 20px;
+      width: 120px;
+      box-shadow: 0 0 10px var(--accent-color);
+      transition: 0.3s;
+      text-align: center;
+    }
+
+    .feature:hover {
+      box-shadow: 0 0 20px var(--accent-color), 0 0 30px var(--accent-color);
+    }
+
+    .feature i {
+      font-size: 2.5em;
+      color: var(--accent-color);
+      margin-bottom: 10px;
+    }
+
+    .feature p {
+      font-weight: bold;
+      margin: 0;
+    }
+
+    .code-box {
+      background-color: var(--box-color);
+      padding: 30px;
+      width: 90%;
+      max-width: 800px;
+      margin: 50px auto 20px auto;
+      border-radius: 20px;
+      position: relative;
+      transition: 0.3s ease;
+    }
+
+    .code-box:hover {
+      box-shadow: 0 0 15px var(--accent-color);
+    }
+
+    .code-text {
+      font-family: monospace;
+      color: var(--accent-color);
+      font-size: 1.2em;
+      word-break: break-word;
+      text-align: left;
+    }
+
+    .copy-button {
+      background: none;
+      border: none;
+      color: var(--accent-color);
+      font-size: 1.5em;
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      cursor: pointer;
+    }
+
+    /* Update Box */
+    .update-box {
+      background-color: var(--box-color);
+      color: var(--accent-color);
+      width: 90%;
+      max-width: 800px;
+      margin: 0 auto 50px auto;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 0 15px var(--accent-color);
+      font-size: 1em;
+      max-height: 120px;
+      overflow-y: auto;
+      text-align: left;
+      line-height: 1.4;
+      scrollbar-width: thin;
+      scrollbar-color: var(--scroll-thumb) var(--scroll-bg);
+    }
+    .update-box::-webkit-scrollbar {
+      width: 6px;
+    }
+    .update-box::-webkit-scrollbar-track {
+      background: var(--scroll-bg);
+      border-radius: 3px;
+    }
+    .update-box::-webkit-scrollbar-thumb {
+      background-color: var(--scroll-thumb);
+      border-radius: 3px;
+      transition: background-color 0.3s ease;
+    }
+    .update-box::-webkit-scrollbar-thumb:hover {
+      background-color: #3399ff;
+    }
+
+    .faq-section {
+      padding: 60px 20px;
+      text-align: center;
+    }
+
+    .faq-section h2 {
+      color: var(--accent-color);
+      margin-bottom: 30px;
+    }
+
+    .faq-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .faq-button {
+      width: 90%;
+      max-width: 600px;
+      padding: 20px;
+      font-size: 1.1em;
+      background-color: var(--box-color);
+      border: none;
+      color: var(--text-color);
+      border-radius: 10px;
+      box-shadow: 0 0 10px var(--accent-color);
+      cursor: pointer;
+      transition: 0.3s ease;
+      position: relative;
+      text-align: left;
+    }
+
+    .faq-button:hover {
+      box-shadow: 0 0 20px var(--accent-color);
+    }
+
+    .faq-button.open {
+      box-shadow: 0 0 25px var(--accent-color), inset 0 0 10px var(--accent-color);
+    }
+
+    .arrow {
+      position: absolute;
+      right: 20px;
+      top: 25px;
+      font-size: 1.2em;
+      transition: transform 0.3s ease;
+    }
+
+    .faq-button.open .arrow {
+      transform: rotate(180deg);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.5s ease, opacity 0.5s ease;
+      opacity: 0;
+      color: var(--accent-color);
+      text-shadow: 0 0 5px var(--accent-color);
+      font-size: 1em;
+      margin-top: 10px;
+    }
+
+    .faq-button.open .faq-answer {
+      max-height: 200px;
+      opacity: 1;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 20px;
+      font-size: 0.9em;
+      color: #888;
+    }
+
+    #loading-screen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--bg-color);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 9999;
+    }
+
+    #loading-screen img {
+      width: 90px;
+      border-radius: 50%;
+      box-shadow: 0 0 20px var(--accent-color);
+    }
+
+    .loading-bar {
+      width: 100px;
+      height: 10px;
+      background: var(--box-color);
+      border-radius: 5px;
+      margin-top: 20px;
+      overflow: hidden;
+    }
+
+    .loading-progress {
+      height: 100%;
+      width: 0%;
+      background: var(--accent-color);
+      animation: loading 2s forwards;
+    }
+
+    @keyframes loading {
+      to {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .features {
+        flex-direction: column;
+      }
+      .navbar {
+        flex-direction: column;
+        right: 10px;
+        top: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+    <!-- STATUS INDICATOR -->
+  <div class="status-indicator">
+    <div class="status-circle"></div>
+    <span class="status-text">Working on it</span>
+  </div>
+
+  <div id="loading-screen">
+    <img src="Logo_Script.png" alt="Loading Logo">
+    <div class="loading-bar"><div class="loading-progress"></div></div>
+  </div>
+
+  <div class="navbar">
+    <a href="#home" class="active">Home</a>
+    <a href="#info">Info</a>
+    <a href="#get-script">Get Script</a>
+  </div>
+
+  <button id="theme-toggle" class="theme-toggle">Light Mode</button>
+
+  <section id="home" class="hero-section">
+    <div class="logo">
+      <img src="Logo_Script.png" alt="Elite Mic Up Logo" />
+    </div>
+    <h1>Elite Mic Up</h1>
+    <button class="discord-button" onclick="window.open('https://discord.gg/yourinvite', '_blank')">
+  <i class="fab fa-discord"></i> Join Discord
+</button>
+  </section>
+
+  <section class="features">
+    <div class="feature">
+      <i class="fas fa-shield-alt"></i>
+      <p>Protected</p>
+    </div>
+    <div class="feature">
+      <i class="fas fa-clock"></i>
+      <p>24/7 Service</p>
+    </div>
+    <div class="feature">
+      <i class="fas fa-bolt"></i>
+      <p>Fast Updates</p>
+    </div>
+  </section>
+
+  <section id="get-script" class="code-box">
+    <button class="copy-button" title="Copy Code"><i class="fas fa-copy"></i></button>
+    <code class="code-text">
+      // Coming Soon..
+    </code>
+  </section>
+
+  <section class="update-box" tabindex="0">
+    <strong>Latest Updates:</strong>
+    <ul>
+      <li>Coming Soon..</li>
+    </ul>
+  </section>
+
+  <section id="info" class="faq-section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-buttons">
+      <button class="faq-button">
+        Is elite script safe to use?
+        <span class="arrow"><i class="fas fa-chevron-down"></i></span>
+        <div class="faq-answer">
+          Yes, our script is designed with security in mind.
+        </div>
+      </button>
+      <button class="faq-button">
+        Is elite script free?
+        <span class="arrow"><i class="fas fa-chevron-down"></i></span>
+        <div class="faq-answer">
+          Yes, elite script is free, and we plan to keep it that way.
+        </div>
+      </button>
+      <button class="faq-button">
+        What exploit are compatible with elite script?
+        <span class="arrow"><i class="fas fa-chevron-down"></i></span>
+        <div class="faq-answer">
+          Our script is compatible with most Roblox exploits including Solara, AWP, Zenith, Velocity, Swift, Xeno and others. The script is made by using Solara. But our script automatically adapts to different exploit enviroment to ensure optimal performance.
+        </div>
+      </button>
+      <button class="faq-button">
+        How often do you update the script?
+        <span class="arrow"><i class="fas fa-chevron-down"></i></span>
+        <div class="faq-answer">
+          We release updates regularly to ensure compatibility with the latest Roblox updates and to add new features. Major updates are typically released monthly, with minor patches and fixes deployed as needed
+        </div>
+      </button>
+            <button class="faq-button">
+        Can i use elite script on mobile?
+        <span class="arrow"><i class="fas fa-chevron-down"></i></span>
+        <div class="faq-answer">
+          We are not sure yet, We did not test the script out on mobile so we dont know if it works on moblie.
+        </div>
+      </button>
+    </div>
+  </section>
+
+  <footer class="footer">
+    &copy; 2025 Elite Mic Up. All rights reserved.
+  </footer>
+
+  <script>
+    // Loading screen logic
+    window.addEventListener('load', () => {
+      const loadingScreen = document.getElementById('loading-screen');
+      setTimeout(() => {
+        loadingScreen.style.opacity = '0';
+        loadingScreen.style.pointerEvents = 'none';
+      }, 2200);
+    });
+
+    // Theme toggle logic
+    const toggleButton = document.getElementById('theme-toggle');
+    toggleButton.addEventListener('click', () => {
+      document.body.classList.toggle('light-mode');
+      const isLight = document.body.classList.contains('light-mode');
+      toggleButton.textContent = isLight ? 'Dark Mode' : 'Light Mode';
+      toggleButton.classList.toggle('light-active', isLight);
+    });
+
+    // FAQ toggle logic
+    const faqButtons = document.querySelectorAll('.faq-button');
+    faqButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        button.classList.toggle('open');
+      });
+    });
+
+    // Copy code button logic
+    const copyButton = document.querySelector('.copy-button');
+    copyButton.addEventListener('click', () => {
+      const codeText = document.querySelector('.code-text').textContent;
+      navigator.clipboard.writeText(codeText).then(() => {
+        copyButton.innerHTML = '<i class="fas fa-check"></i>';
+        setTimeout(() => {
+          copyButton.innerHTML = '<i class="fas fa-copy"></i>';
+        }, 1500);
+      });
+    });
+  </script>
+</body>
+</html>
